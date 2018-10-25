@@ -34,6 +34,7 @@ fileprivate class ImmediatePanGestureRecognizer : UIPanGestureRecognizer {
     }
 }
 
+
 // MARK: - InteractiveChartViewDelegate
 @objc
 public protocol InteractiveChartViewDelegate : ChartViewDelegate {
@@ -62,12 +63,65 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
     open override func notifyDataSetChanged() {
         super.notifyDataSetChanged()
         
+        var btn = UserDefaults.standard.integer(forKey: "btnChart")
+       /*
+        if btn != nil{
         // refresh selected data
         if let data = _selectedData {
             if let entry = data.set.entryForIndex(data.index) {
                 _selectedData?.entry = entry
                 highlightValue(x: entry.x, y: entry.y, dataSetIndex: data.setIndex, callDelegate: false)
             }
+        }
+        }
+        */
+        switch btn {
+        case 0:
+            if _selectedData?.set.label == "clouds"{
+                if let data = _selectedData {
+                    if let entry = data.set.entryForIndex(data.index) {
+                        
+                        _selectedData?.entry = entry
+                        highlightValue(x: entry.x, y: entry.y, dataSetIndex: data.setIndex, callDelegate: false)
+                    }
+                }
+            }
+            break
+        case 1:
+            if _selectedData?.set.label == "blue"{
+                if let data = _selectedData {
+                    if let entry = data.set.entryForIndex(data.index) {
+                        
+                        _selectedData?.entry = entry
+                        highlightValue(x: entry.x, y: entry.y, dataSetIndex: data.setIndex, callDelegate: false)
+                    }
+                }
+            }
+            break
+        case 2:
+            if _selectedData?.set.label == "white"{
+                if let data = _selectedData {
+                    if let entry = data.set.entryForIndex(data.index) {
+                        
+                        _selectedData?.entry = entry
+                        highlightValue(x: entry.x, y: entry.y, dataSetIndex: data.setIndex, callDelegate: false)
+                    }
+                }
+            }
+            break
+        case 3:
+            if _selectedData?.set.label == "Moon"{
+                if let data = _selectedData {
+                    if let entry = data.set.entryForIndex(data.index) {
+                        
+                        _selectedData?.entry = entry
+                        highlightValue(x: entry.x, y: entry.y, dataSetIndex: data.setIndex, callDelegate: false)
+                    }
+                }
+            }
+            break
+        default:
+            break
         }
     }
     
@@ -115,14 +169,14 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                 
                 if closestEntry.x >= touchX {
                     let nIndex = index - 1
-                    assert(nIndex >= 0)
+                    //assert(nIndex >= 0)
                     if nIndex >= 0 {
                         smallerEntry = set.entryForIndex(nIndex)
                         greaterEntry = closestEntry
                     }
                 } else {
                     let nIndex = index + 1
-                    assert(nIndex < set.entryCount)
+                   // assert(nIndex < set.entryCount)
                     if nIndex < set.entryCount {
                         smallerEntry = closestEntry
                         greaterEntry = set.entryForIndex(nIndex)
@@ -150,8 +204,8 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
     
     
     // MARK: - Private
-    fileprivate var _isDragging = false
-    fileprivate var _isDraggingPoint = false
+     var _isDragging = false
+     var _isDraggingPoint = false
     fileprivate var _selectedData : ChartSelectedData? = nil
     fileprivate var _selectedDataSet : ChartDataSet? = nil
     
@@ -172,6 +226,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
         super.initialize()
         
         renderer = LineChartRenderer(dataProvider: self, animator: _animator, viewPortHandler: _viewPortHandler)
+        
         
         // reset gesture actions
         _tapGestureRecognizer.removeTarget(self, action: nil)
@@ -240,7 +295,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             { // If we have no data, we have nothing to pan and no data to highlight
                 return
             }
-            
+          
             // If drag is enabled and we are in a position where there's something to drag:
             if self.isDragEnabled
             {
@@ -277,26 +332,62 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                         // check if we haven't passed the previous point or next one
                         var canUpdateEntryX = true
                         let newX = Double(value.x)
-                        let newY = Double(value.y)
+                        var newY = Double(value.y)
+                        if UserDefaults.standard.bool(forKey: "isCloud"){
+                            if let v = selectedData.set.entryForIndex(0)?.x{
+                            selectedData.set.entryForIndex(1)?.x =  (selectedData.set.entryForIndex(0)?.x)!
+                            selectedData.set.entryForIndex(3)?.x =  (selectedData.set.entryForIndex(4)?.x)!
+                            }
+                        }else{
+                            
+                        }
                         
+                        print(newX)
                         if selectedData.set.entryForIndex(selectedData.index) != nil {
                             
                             if selectedData.index > 0 {
                                 if let prevEntry = selectedData.set.entryForIndex(selectedData.index-1) {
-                                    canUpdateEntryX = newX > prevEntry.x
+                                   if UserDefaults.standard.bool(forKey: "isCloud"){
+                                        canUpdateEntryX = true
+                                   }else{
+                                        canUpdateEntryX = newX > prevEntry.x
+                                    }
                                 }
                             } else {
                                 // only allow vertical movement for first point
-                                canUpdateEntryX = false
+                                if UserDefaults.standard.bool(forKey: "isCloud"){
+                                     canUpdateEntryX = true
+                                    //newY = 50.0
+                                }else{
+                                    canUpdateEntryX = false
+                                }
                             }
                             if canUpdateEntryX {
                                 if selectedData.index < selectedData.set.entryCount-1 {
                                     if let nextEntry = selectedData.set.entryForIndex(selectedData.index+1) {
-                                        canUpdateEntryX = newX < nextEntry.x
+                                       
+                                        if UserDefaults.standard.bool(forKey: "isCloud"){
+                                            if selectedData.set.label == "clouds"{
+                                                canUpdateEntryX = true
+                                            }else{
+                                                canUpdateEntryX = false
+                                            }
+                                            //newY = 50.0
+                                        }else{
+                                             canUpdateEntryX = newX < nextEntry.x
+                                        }
                                     }
                                 } else {
                                     // only allow vertical movement for last point
-                                    canUpdateEntryX = false
+                                    if UserDefaults.standard.bool(forKey: "isCloud"){
+                                        if selectedData.set.label == "clouds"{
+                                            canUpdateEntryX = true
+                                        }else{
+                                            canUpdateEntryX = false
+                                        }
+                                    }else{
+                                        canUpdateEntryX = false
+                                    }
                                 }
                             }
                             
@@ -306,14 +397,35 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                             }
                             
                             if newY <= leftAxis.axisMaximum && newY >= leftAxis.axisMinimum {
-                                selectedData.entry.y = Double(newY)
-                                canUpdate = true
+                                
+                                if UserDefaults.standard.bool(forKey: "isCloud"){
+                                    if selectedData.index == 2 || selectedData.index == 3 || selectedData.index == 1 && selectedData.set.label == "clouds"{
+                                        canUpdate = false
+                                       selectedData.entry.y = Double(100)
+                                    }else{
+                                        canUpdate = true
+                                        selectedData.entry.y = Double(newY)
+                                    }
+                                }else{
+                                    canUpdate = true
+                                    selectedData.entry.y = Double(newY)
+                                }
                             }
                             
-                            updateHighlightAfterMove(for: pixelForValues(x: selectedData.entry.x, y: selectedData.entry.y, axis: selectedData.set.axisDependency))
+                            //updateHighlightAfterMove(for: pixelForValues(x: selectedData.entry.x, y: selectedData.entry.y, axis: selectedData.set.axisDependency))
                             if canUpdate {
                                 //NSLog("Moved - x:\(newX), y: \(newY)")
-                                interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: false)
+                                if UserDefaults.standard.bool(forKey: "isCloud"){
+                                    if selectedData.index == 2, selectedData.index == 1, selectedData.index == 3 && selectedData.set.label == "clouds"{
+                                        
+                                    }else{
+                                        interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: false)
+                                      
+                                        
+                                    }
+                                }else{
+                                   interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: false)
+                                }
                             }
                             
                             // NOTE: use below to snap the highlight while it's moving
@@ -336,6 +448,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
         }
         else if recognizer.state == NSUIGestureRecognizerState.ended || recognizer.state == NSUIGestureRecognizerState.cancelled
         {
+            
             if _isDragging
             {
                 if recognizer.state == NSUIGestureRecognizerState.ended && isDragDecelerationEnabled
@@ -350,8 +463,8 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                 }
             
                 if _isDraggingPoint, let selectedData = _selectedData {
-                    interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: true)
-                    updateHighlightAfterMove(for: pixelForValues(x: selectedData.entry.x, y: selectedData.entry.y, axis: selectedData.set.axisDependency))
+                   // interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: true)
+                   // updateHighlightAfterMove(for: pixelForValues(x: selectedData.entry.x, y: selectedData.entry.y, axis: selectedData.set.axisDependency))
                 }
                 
                 _isDragging = false
