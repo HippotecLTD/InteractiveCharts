@@ -16,6 +16,7 @@ import UIKit.UIGestureRecognizerSubclass
 fileprivate class ImmediatePanGestureRecognizer : UIPanGestureRecognizer {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         if self.state == .began {
+            
             _touchDelayTimer?.invalidate()
             return
         } else if _touchDelayTimer == nil || _touchDelayTimer?.isValid == false {
@@ -62,7 +63,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
     
     open override func notifyDataSetChanged() {
         super.notifyDataSetChanged()
-        
+        dragEnabled = false
         var btn = UserDefaults.standard.integer(forKey: "btnChart")
        /*
         if btn != nil{
@@ -78,6 +79,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
         switch btn {
         case 0:
             if _selectedData?.set.label == "clouds"{
+                dragEnabled = true
                 if let data = _selectedData {
                     if let entry = data.set.entryForIndex(data.index) {
                         
@@ -89,6 +91,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             break
         case 1:
             if _selectedData?.set.label == "blue"{
+                dragEnabled = true
                 if let data = _selectedData {
                     if let entry = data.set.entryForIndex(data.index) {
                         
@@ -100,6 +103,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             break
         case 2:
             if _selectedData?.set.label == "white"{
+                dragEnabled = true
                 if let data = _selectedData {
                     if let entry = data.set.entryForIndex(data.index) {
                         
@@ -111,6 +115,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             break
         case 3:
             if _selectedData?.set.label == "Moon"{
+                dragEnabled = true
                 if let data = _selectedData {
                     if let entry = data.set.entryForIndex(data.index) {
                         
@@ -121,6 +126,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             }
             break
         default:
+            dragEnabled = false
             break
         }
     }
@@ -334,9 +340,17 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                         let newX = Double(value.x)
                         var newY = Double(value.y)
                         if UserDefaults.standard.bool(forKey: "isCloud"){
-                            if let v = selectedData.set.entryForIndex(0)?.x{
+                            if selectedData.set.label == "clouds"{
                             selectedData.set.entryForIndex(1)?.x =  (selectedData.set.entryForIndex(0)?.x)!
                             selectedData.set.entryForIndex(3)?.x =  (selectedData.set.entryForIndex(4)?.x)!
+                             
+                                if selectedData.set.entryForIndex(4)!.x > (data?._dataSets[1].xMax)!{
+                                    selectedData.set.entryForIndex(4)?.x = (data?._dataSets[1].xMax)!
+                                }
+                                if selectedData.set.entryForIndex(0)!.x < (data?._dataSets[1].xMin)!{
+                                    selectedData.set.entryForIndex(0)?.x = (data?._dataSets[1].xMin)!
+                                }
+                                
                             }
                         }else{
                             
@@ -463,7 +477,7 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
                 }
             
                 if _isDraggingPoint, let selectedData = _selectedData {
-                   // interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: true)
+                    interactiveDelegate?.chartValueMoved(self, entry: selectedData.entry, touchFinished: true)
                    // updateHighlightAfterMove(for: pixelForValues(x: selectedData.entry.x, y: selectedData.entry.y, axis: selectedData.set.axisDependency))
                 }
                 
@@ -519,7 +533,52 @@ open class InteractiveChartView: BarLineChartViewBase, LineChartDataProvider {
             
             if let setIndex = data?.indexOfDataSet(closestDataSet) {
                 if selectedEntryIndex != Int.max {
-                    return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
+                    
+                    dragEnabled = false
+                    var btn = UserDefaults.standard.integer(forKey: "btnChart")
+                   
+                    switch btn {
+                    case 0:
+                        if setIndex == 0 && (selectedEntryIndex == 0 || selectedEntryIndex == 4) {
+                            dragEnabled = true
+                            
+                           
+                            return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
+                        }else{
+                            return nil
+                        }
+                        break
+                    case 1:
+                        if setIndex == 1 {
+                            dragEnabled = true
+                            return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
+                        }else{
+                            return nil
+                        }
+                        break
+                    case 2:
+                        if setIndex == 2 {
+                            dragEnabled = true
+                            return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
+                        }else{
+                            return nil
+                        }
+                        break
+                    case 3:
+                        if setIndex == 3 {
+                            dragEnabled = true
+                            return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
+                        }else{
+                            return nil
+                        }
+                        break
+                    default:
+                        return nil
+                        break
+                    }
+                    
+                    
+                    //return ChartSelectedData(setIndex: setIndex, set: closestDataSet as! ChartDataSet, index: selectedEntryIndex, entry: closestDataSet.entryForIndex(selectedEntryIndex)!)
                 }
             }
         }
